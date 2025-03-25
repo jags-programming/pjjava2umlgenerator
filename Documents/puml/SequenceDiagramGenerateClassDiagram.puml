@@ -1,0 +1,35 @@
+@startuml
+
+== Generating a Class Diagram ==
+actor User
+participant CLIApplication
+participant UMLDiagramGenerator
+participant JavaParserService
+participant ClassDiagramService
+participant StorageService
+participant ConfigurationManager
+participant FileHandler
+participant CodeEntity
+participant MethodEntity
+participant FieldEntity
+participant RelationshipManager
+
+User -> CLIApplication : Request class diagram generation
+CLIApplication -> UMLDiagramGenerator : generateClassDiagram()
+UMLDiagramGenerator -> ConfigurationManager : validateConfiguration()
+UMLDiagramGenerator -> FileHandler : readFile(filePath)
+FileHandler -> UMLDiagramGenerator : return File Content
+UMLDiagramGenerator -> JavaParserService : parseFiles(fileContent)
+JavaParserService -> CodeEntity : createClassEntities(fileContent)
+JavaParserService -> MethodEntity : extractMethods(classData)
+JavaParserService -> FieldEntity : extractFields(classData)
+JavaParserService -> RelationshipManager : identifyRelationships(classData)
+RelationshipManager -> CodeEntity : establishRelationships()
+JavaParserService -> UMLDiagramGenerator : return ParsedData
+UMLDiagramGenerator -> ClassDiagramService : generateDiagram(ParsedData)
+ClassDiagramService -> UMLDiagramGenerator : return Class Diagram
+UMLDiagramGenerator -> StorageService : storeDiagram()
+StorageService -> UMLDiagramGenerator : Confirmation
+UMLDiagramGenerator -> CLIApplication : Return Diagram Path
+
+@enduml

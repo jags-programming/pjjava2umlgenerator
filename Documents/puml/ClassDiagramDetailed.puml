@@ -1,0 +1,148 @@
+@startuml
+
+class UMLDiagramGenerator {
+  - ParsedData parsedData
+  - String diagramFormat
+  - ClassDiagramService classDiagramService
+  - SequenceDiagramService sequenceDiagramService
+  - StorageService storageService
+  - ConfigurationManager config
+  + UMLDiagramGenerator(ConfigurationManager config)
+  + void loadParsedData(ParsedData data)
+  + String generateClassDiagram()
+  + String generateSequenceDiagram()
+  + void exportDiagram(String format, String outputPath)
+  + void storeDiagram()
+  + void setDiagramFormat(String format)
+  - boolean validateConfiguration()
+  - void optimizeDiagramRendering()
+}
+
+class JavaParserService {
+  - List<File> sourceFiles
+  - ParsedData parsedData
+  - ConfigurationManager config
+  + JavaParserService(ConfigurationManager config)
+  + void loadSourceFiles(List<File> files)
+  + ParsedData parseFiles()
+  - void extractRelationships()
+  - boolean validateSyntax()
+}
+
+class ClassDiagramService {
+  - ParsedData parsedData
+  - ConfigurationManager config
+  + ClassDiagramService(ConfigurationManager config)
+  + String generateDiagram(ParsedData data)
+  - void formatDiagram(String format)
+}
+
+class SequenceDiagramService {
+  - ParsedData parsedData
+  - ConfigurationManager config
+  - Map<String, List<String>> interactionMap
+  + SequenceDiagramService(ConfigurationManager config)
+  + String generateDiagram(ParsedData data)
+  - void extractMethodCalls()
+  - void formatDiagram(String format)
+}
+
+class FileHandler {
+  - String filePath
+  - String fileContent
+  - ConfigurationManager config
+  + FileHandler(ConfigurationManager config)
+  + String readFile(String filePath)
+  + void writeFile(String filePath, String content)
+  - boolean validateFile(String filePath)
+}
+
+class CLIApplication {
+  - String[] args
+  - ConfigurationManager config
+  - UMLDiagramGenerator umlGenerator
+  + CLIApplication(ConfigurationManager config)
+  + void parseArguments(String[] args)
+  + void executeCommand()
+  + void displayHelp()
+}
+
+class GraphicalUI {
+  - String windowTitle
+  - Canvas diagramCanvas
+  - List<String> menuOptions
+  - ConfigurationManager config
+  + GraphicalUI(ConfigurationManager config)
+  + void initializeComponents()
+  + void renderDiagram(UMLDiagram diagram)
+  + void handleUserInput(String action)
+  + void refreshUI()
+  + void exportDiagram(String format, String filePath)
+}
+
+class StorageService {
+  - ConfigurationManager config
+  + StorageService(ConfigurationManager config)
+  + void storeDiagram(String format, String outputPath)
+  + String retrieveDiagram(String diagramId)
+}
+
+class CodeEntity {
+  - String name
+  - List<MethodEntity> methods
+  - List<FieldEntity> fields
+  - List<RelationshipManager> relationships
+  + CodeEntity(String name)
+  + void addMethod(MethodEntity method)
+  + void addField(FieldEntity field)
+  + void addRelationship(RelationshipManager relationship)
+}
+
+class MethodEntity {
+  - String name
+  - String returnType
+  - List<String> parameters
+  - String visibility
+  + MethodEntity(String name, String returnType)
+  + void addParameter(String paramType)
+}
+
+class FieldEntity {
+  - String name
+  - String type
+  - String visibility
+  + FieldEntity(String name, String type)
+}
+
+class RelationshipManager {
+  - CodeEntity source
+  - CodeEntity target
+  - String type
+  + RelationshipManager(CodeEntity source, CodeEntity target, String type)
+}
+
+class ConfigurationManager {
+  - Map<String, String> settings
+  + ConfigurationManager()
+  + void loadConfig(String filePath)
+  + String getConfig(String key)
+  + void setConfig(String key, String value)
+}
+
+' Define Dependencies
+UMLDiagramGenerator --> ClassDiagramService
+UMLDiagramGenerator --> SequenceDiagramService
+UMLDiagramGenerator --> StorageService
+UMLDiagramGenerator --> ConfigurationManager
+JavaParserService --> FileHandler
+JavaParserService --> CodeEntity
+CodeEntity --> MethodEntity
+CodeEntity --> FieldEntity
+CodeEntity --> RelationshipManager
+RelationshipManager --> CodeEntity
+StorageService --> ConfigurationManager
+ConfigurationManager --> UMLDiagramGenerator
+ConfigurationManager --> CLIApplication
+ConfigurationManager --> GraphicalUI
+
+@enduml

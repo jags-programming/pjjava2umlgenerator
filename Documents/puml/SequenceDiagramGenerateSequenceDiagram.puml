@@ -1,0 +1,41 @@
+@startuml
+
+== Generating a Sequence Diagram ==
+actor User
+participant CLIApplication
+participant UMLDiagramGenerator
+participant JavaParserService
+participant SequenceDiagramService
+participant StorageService
+participant ConfigurationManager
+participant FileHandler
+participant CodeEntity
+participant MethodEntity
+participant RelationshipManager
+
+User -> CLIApplication : Request sequence diagram generation
+CLIApplication -> UMLDiagramGenerator : generateSequenceDiagram()
+UMLDiagramGenerator -> ConfigurationManager : validateConfiguration()
+UMLDiagramGenerator -> FileHandler : readFile(filePath)
+FileHandler -> UMLDiagramGenerator : return File Content
+UMLDiagramGenerator -> JavaParserService : parseFiles(fileContent)
+JavaParserService -> CodeEntity : createClassEntities(fileContent)
+JavaParserService -> MethodEntity : extractMethods(classData)
+JavaParserService -> RelationshipManager : identifyMethodCalls(classData)
+RelationshipManager -> MethodEntity : establishMethodInteractions()
+
+' Track method interactions dynamically
+MethodEntity -> CodeEntity : Identify caller and callee
+CodeEntity -> MethodEntity : Log method invocation
+MethodEntity -> RelationshipManager : Register interaction
+
+JavaParserService -> UMLDiagramGenerator : return ParsedData
+UMLDiagramGenerator -> SequenceDiagramService : generateDiagram(ParsedData)
+SequenceDiagramService -> SequenceDiagramService : extractMethodCalls()
+SequenceDiagramService -> SequenceDiagramService : formatDiagram()
+SequenceDiagramService -> UMLDiagramGenerator : return Sequence Diagram
+UMLDiagramGenerator -> StorageService : storeDiagram()
+StorageService -> UMLDiagramGenerator : Confirmation
+UMLDiagramGenerator -> CLIApplication : Return Diagram Path
+
+@enduml

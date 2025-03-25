@@ -1,0 +1,15 @@
+@startuml
+
+== Loading and Managing Configurations ==
+actor System
+participant ConfigurationManager
+participant UMLDiagramGenerator
+participant CLIApplication
+
+System -> ConfigurationManager : loadConfig(configFilePath)
+ConfigurationManager -> ConfigurationManager : Read configuration file
+ConfigurationManager -> ConfigurationManager : Validate settings
+ConfigurationManager -> UMLDiagramGenerator : Apply configuration
+UMLDiagramGenerator -> CLIApplication : Configuration Loaded
+
+@enduml

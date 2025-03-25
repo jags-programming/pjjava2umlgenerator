@@ -1,0 +1,24 @@
+@startuml
+
+== Parsing Java Files Without Generating Diagrams ==
+actor User
+participant CLIApplication
+participant FileHandler
+participant JavaParserService
+participant CodeEntity
+participant MethodEntity
+participant FieldEntity
+participant StorageService
+
+User -> CLIApplication : Request file parsing
+CLIApplication -> FileHandler : readFile(filePath)
+FileHandler -> CLIApplication : return File Content
+CLIApplication -> JavaParserService : parseFiles(fileContent)
+JavaParserService -> CodeEntity : createClassEntities(fileContent)
+JavaParserService -> MethodEntity : extractMethods(classData)
+JavaParserService -> FieldEntity : extractFields(classData)
+JavaParserService -> StorageService : storeParsedData(parsedData)
+StorageService -> JavaParserService : Confirmation
+JavaParserService -> CLIApplication : return ParsedData
+
+@enduml
