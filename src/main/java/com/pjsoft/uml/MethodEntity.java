@@ -11,6 +11,22 @@ public class MethodEntity {
     private List<String> parameters;
     private String visibility;
 
+    public String getName() {
+        return name;
+    }
+
+    public String getReturnType() {
+        return returnType;
+    }
+
+    public List<String> getParameters() {
+        return parameters;
+    }
+
+    public String getVisibility() {
+        return visibility;
+    }
+
     public MethodEntity(String name, String returnType) {
         this.name = name;
         this.returnType = returnType;

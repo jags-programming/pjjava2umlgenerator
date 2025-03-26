@@ -11,6 +11,22 @@ public class CodeEntity {
     private List<FieldEntity> fields;
     private List<RelationshipManager> relationships;
 
+    public String getName() {
+        return name;
+    }
+
+    public List<MethodEntity> getMethods() {
+        return methods;
+    }
+
+    public List<FieldEntity> getFields() {
+        return fields;
+    }
+
+    public List<RelationshipManager> getRelationships() {
+        return relationships;
+    }
+
     public CodeEntity(String name) {
         this.name = name;
         this.methods = new ArrayList<>();
