@@ -18,3 +18,18 @@ Thumbs.db
 
 # Ignore /input directory
 input/
+
+# Ignore Documents directory
+Documents/
+
+# Ignore input
+/input
+
+# Ignore output
+
+/output
+
+# Ignore logs
+/logs
+
+
