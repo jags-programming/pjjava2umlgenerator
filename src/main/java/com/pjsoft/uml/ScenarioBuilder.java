@@ -10,7 +10,7 @@ import java.util.*;
  * and method, traversing the caller-callee relationships recursively.
  */
 public class ScenarioBuilder {
-
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScenarioBuilder.class);
     private final String projectPackage;
 
     /**
@@ -82,8 +82,8 @@ public class ScenarioBuilder {
         List<Scenario> scenarios = new ArrayList<>();
         for (CodeEntity entryClass : entryClasses) {
             // Get scenarios for the current entry class
-            List<Scenario> entryClassScenarios = getScenariosByEntryClass(entryClass);
-
+            
+            List<Scenario> entryClassScenarios = getScenariosByEntryClass(entryClass, codeEntities);
             // Merge the scenarios into the main list
             scenarios.addAll(entryClassScenarios);
         }
@@ -102,7 +102,7 @@ public class ScenarioBuilder {
      * @return A list of scenarios starting from the entry class.
      * @throws IllegalArgumentException If the entryClass is null.
      */
-    private List<Scenario> getScenariosByEntryClass(CodeEntity entryClass) {
+    private List<Scenario> getScenariosByEntryClass(CodeEntity entryClass, List<CodeEntity> codeEntities) {
         if (entryClass == null) {
             throw new IllegalArgumentException("EntryClass cannot be null");
         }
@@ -116,8 +116,8 @@ public class ScenarioBuilder {
             Set<String> visited = new HashSet<>(); // To avoid cycles
 
             // Build the scenario starting from this method
-            buildScenarioFromMethod(entryClass, method.getName(), scenario, visited);
-
+            buildScenarioFromMethod(entryClass, method.getName(), scenario, visited, codeEntities);
+            
             // Add the built scenario to the list
             scenarios.add(scenario);
         }
@@ -137,7 +137,7 @@ public class ScenarioBuilder {
  * @param visited A set of visited classes and methods to avoid cycles.
  * @throws IllegalArgumentException If any of the arguments are null.
  */
-private void buildScenarioFromMethod(CodeEntity entryClass, String startingMethod, Scenario scenario, Set<String> visited) {
+private void buildScenarioFromMethod(CodeEntity entryClass, String startingMethod, Scenario scenario, Set<String> visited, List<CodeEntity> codeEntities) {
     if (entryClass == null || startingMethod == null || scenario == null) {
         throw new IllegalArgumentException("Arguments cannot be null");
     }
@@ -155,7 +155,12 @@ private void buildScenarioFromMethod(CodeEntity entryClass, String startingMetho
     for (Relative relative : callerCalleeRelatives) {
         // Check if the relationship starts from the given method
         if (relative.getCallerMethod().equals(startingMethod)) {
-            CodeEntity calleeEntity = relative.getCalleeEntity();
+            // Look up the full CodeEntity for the callee
+            CodeEntity calleeEntity = findCodeEntityByName(codeEntities, relative.getCalleeEntity().getName());
+            if (calleeEntity == null) {
+                logger.warn("Callee entity not found: {}", relative.getCalleeEntity().getName());
+                continue;
+            }
 
             // Add the interaction to the scenario
             scenario.addInteraction(new Interaction(
@@ -166,56 +171,20 @@ private void buildScenarioFromMethod(CodeEntity entryClass, String startingMetho
             ));
 
             // Recursively build the scenario for the callee
-            buildScenarioFromMethod(calleeEntity, relative.getCalleeMethod(), scenario, visited);
+            buildScenarioFromMethod(calleeEntity, relative.getCalleeMethod(), scenario, visited, codeEntities);
         }
     }
+
+    
+    
 }
 
-    /**
-     * Recursively builds a scenario starting from a specific method of an entry class.
-     * 
-     * This method traverses the caller-callee relationships recursively, adding interactions
-     * to the scenario. It uses a visited set to avoid cycles in the relationship graph.
-     * 
-     * @param entryClass The entry class to start the scenario.
-     * @param startingMethod The method in the entry class that starts the scenario.
-     * @param scenario The scenario to build.
-     * @param visited A set of visited classes and methods to avoid cycles.
-     * @throws IllegalArgumentException If any of the arguments are null.
-     */
-    /**
-    private void buildScenarioFromMethod(CodeEntity entryClass, String startingMethod, Scenario scenario, Set<String> visited) {
-        if (entryClass == null || startingMethod == null || scenario == null) {
-            throw new IllegalArgumentException("Arguments cannot be null");
-        }
-
-        String visitedKey = entryClass.getName() + "::" + startingMethod;
-        if (visited.contains(visitedKey)) {
-            return; // Avoid cycles
-        }
-        visited.add(visitedKey);
-
-        // Get all CALLER_CALLEE relationships for the entry class
-        List<Relative> callerCalleeRelatives = entryClass.getRelativesByRelationshipType(Relative.RelationshipType.CALLER_CALLEE);
-
-        for (Relative relative : callerCalleeRelatives) {
-            // Check if the relationship starts from the given method
-            if (relative.getCallerMethod().equals(startingMethod)) {
-                CodeEntity calleeEntity = relative.getCalleeEntity();
-
-                // Add the interaction to the scenario
-                scenario.addInteraction(new Interaction(
-                    entryClass.getName(),
-                    relative.getCallerMethod(),
-                    calleeEntity.getName(),
-                    relative.getCalleeMethod()
-                ));
-
-                // Recursively build the scenario for the callee
-                buildScenarioFromMethod(calleeEntity, relative.getCalleeMethod(), scenario, visited);
-                //when you make current callee as caller and its method as starting method and iterate further, interactions should be added to same scenario otherwise it will be a new scenario. It won't make full directed graph or call tree required for sequence diagram. This is the problem in current implmentation that is why a sequence diagram is showing first class, its next class but after than no class their is callee of second class in the chain. 
-            }
+private CodeEntity findCodeEntityByName(List<CodeEntity> codeEntities, String name) {
+    for (CodeEntity codeEntity : codeEntities) {
+        if (codeEntity.getName().equals(name)) {
+            return codeEntity;
         }
     }
-        */
+    return null; // Return null if not found
+}
 }

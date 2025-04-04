@@ -16,7 +16,7 @@ import net.sourceforge.plantuml.SourceFileReader;
  * generation of diagram images (e.g., `.png` or `.svg`) using the PlantUML library.
  */
 public class SequenceDiagramService {
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(CLIApplication.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SequenceDiagramService.class);
     private final ConfigurationManager config;
 
     /**

@@ -72,6 +72,18 @@
     <artifactId>plantuml</artifactId>
     <version>1.2023.6</version> <!-- Use the latest version -->
 </dependency>
+<!-- If resolution of library classes and functions is required following and others can be added -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>5.3.20</version>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.data</groupId>
+        <artifactId>spring-data-jpa</artifactId>
+        <version>2.6.4</version>
+    </dependency>
+    <!-- Add other dependencies as needed -->
     </dependencies>
 
     <build>

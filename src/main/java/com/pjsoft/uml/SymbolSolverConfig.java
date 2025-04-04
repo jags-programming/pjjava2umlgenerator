@@ -5,6 +5,7 @@ import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ClassLoaderTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 
 import java.io.File;
@@ -55,7 +56,7 @@ public class SymbolSolverConfig {
      * @since 1.0
      */
     public static void configureSymbolSolver(String inputSourceRootPath) {
-        logger.debug("inputSourceRootPath in SymbolSolverConfig: ************************************ ");
+       
         CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
 
         // Add the JDK to the TypeSolver
@@ -68,7 +69,8 @@ public class SymbolSolverConfig {
             throw new IllegalArgumentException("Invalid input source root path: " + inputSourceRootPath);
         }
         combinedTypeSolver.add(new JavaParserTypeSolver(inputSourceRoot));
-
+        // Add the classpath for external libraries
+        combinedTypeSolver.add(new ClassLoaderTypeSolver(Thread.currentThread().getContextClassLoader()));
         // Attach the SymbolSolver to the StaticJavaParser
         JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);
         ParserConfiguration parserConfiguration = new ParserConfiguration();

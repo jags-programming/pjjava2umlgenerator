@@ -11,7 +11,7 @@ import java.util.List;
  * that form the sequence diagram.
  */
 public class Scenario {
-
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Scenario.class);
     private final String entryClass;
     private final String startingMethod; // The method in the entry class that starts the scenario
     private final List<Interaction> interactions; // List of interactions in the scenario
