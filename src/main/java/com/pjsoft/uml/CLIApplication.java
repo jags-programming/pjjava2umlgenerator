@@ -114,7 +114,7 @@ public class CLIApplication {
      * @throws IOException if file-based settings cannot be loaded.
      * @since 1.0
      */
-    private static void handleConfigurationChoice(String configChoice, ConfigurationManager configManager)
+     static void handleConfigurationChoice(String configChoice, ConfigurationManager configManager)
             throws IOException {
         switch (configChoice) {
             case "1":

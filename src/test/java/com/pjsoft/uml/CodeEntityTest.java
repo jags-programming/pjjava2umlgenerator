@@ -135,4 +135,34 @@ class CodeEntityTest {
 
         logger.info("after assertAll: CodeEntityTest");
     }
+
+    @Test
+void testEqualsAndHashCode_ShouldBeConsistent() {
+    CodeEntity entity1 = new CodeEntity("TestClass");
+    CodeEntity entity2 = new CodeEntity("TestClass");
+    CodeEntity entity3 = new CodeEntity("AnotherClass");
+
+    assertAll(
+        () -> assertEquals(entity1, entity2, "Entities with the same name should be equal"),
+        () -> assertNotEquals(entity1, entity3, "Entities with different names should not be equal"),
+        () -> assertEquals(entity1.hashCode(), entity2.hashCode(), "Hash codes should match for equal entities"),
+        () -> assertNotEquals(entity1.hashCode(), entity3.hashCode(), "Hash codes should not match for different entities")
+    );
+}
+
+@Test
+void testAddAndRetrieveRelatives_ShouldWorkCorrectly() {
+    CodeEntity codeEntity = new CodeEntity("TestClass");
+        // Create a callee CodeEntity instance
+        CodeEntity calleeEntity = new CodeEntity("CalleeClass");
+    Relative relative = new Relative(Relative.RelationshipType.CALLER_CALLEE, calleeEntity, "callerMethod", "calleeMethod");
+
+    codeEntity.addRelative(relative);
+
+    assertAll(
+        () -> assertEquals(1, codeEntity.getRelatives().size(), "Relatives collection size should be 1"),
+        () -> assertEquals(relative, codeEntity.getRelatives().iterator().next(), "Relative should match the added one"),
+        () -> assertEquals(1, codeEntity.getRelativesByRelationshipType(Relative.RelationshipType.CALLER_CALLEE).size(), "Should retrieve relatives by type")
+    );
+}
 }

@@ -1,144 +1,153 @@
 package com.pjsoft.uml;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ConfigurationManagerTest {
-    private static final Logger logger = (Logger) LoggerFactory.getLogger(ConfigurationManagerTest.class);
+
     private ConfigurationManager configManager;
-    private Path tempConfigFile;
+    private Path tempInputDir;
+    private Path tempOutputDir;
 
     @BeforeEach
     void setUp() throws IOException {
+        // Initialize the ConfigurationManager singleton
         configManager = ConfigurationManager.getInstance();
-        tempConfigFile = Files.createTempFile("application", ".properties");
-        configManager.clearSettings(); // Clear the settings map
+        configManager.clearSettings();
+
+        // Set up temporary directories for testing
+        tempInputDir = Files.createTempDirectory("input");
+        tempOutputDir = Files.createTempDirectory("output");
     }
 
-    /**
     @Test
-    void testLoadConfig() throws IOException {
-        logger.info("Enters: testLoadConfig()");
-        // Write sample configuration to the temp file
+    void testLoadDefaultConfig() {
+        // Act
+        configManager.loadDefaultConfig();
+
+        // Assert
+        assertEquals("./input", configManager.getProperty("input.directory"), "Default input directory should be './input'");
+        assertEquals("./output", configManager.getProperty("output.directory"), "Default output directory should be './output'");
+        assertEquals("class,sequence", configManager.getProperty("diagram.types"), "Default diagram types should be 'class,sequence'");
+        assertEquals("", configManager.getProperty("include.package"), "Default include.package should be empty");
+    }
+
+    @Test
+    void testSetProperty_ValidInputDirectory() {
+        // Act
+        configManager.setProperty("input.directory", tempInputDir.toString());
+
+        // Assert
+        assertEquals(tempInputDir.toString(), configManager.getProperty("input.directory"), "Input directory should be set correctly");
+    }
+
+    @Test
+    void testSetProperty_InvalidInputDirectory() {
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            configManager.setProperty("input.directory", "nonexistent_directory");
+        });
+
+        assertTrue(exception.getMessage().contains("input.directory must be a valid directory: nonexistent_directory"),
+                "Exception message should indicate invalid input directory");
+    }
+
+    @Test
+    void testSetProperty_ValidOutputDirectory() {
+        // Act
+        configManager.setProperty("output.directory", tempOutputDir.toString());
+
+        // Assert
+        assertEquals(tempOutputDir.toString(), configManager.getProperty("output.directory"), "Output directory should be set correctly");
+    }
+
+
+
+    @Test
+    void testSetProperty_ValidDiagramTypes() {
+        // Act
+        configManager.setProperty("diagram.types", "class,sequence");
+
+        // Assert
+        assertEquals("class,sequence", configManager.getProperty("diagram.types"), "Diagram types should be set correctly");
+    }
+
+    @Test
+    void testSetProperty_InvalidDiagramTypes() {
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            configManager.setProperty("diagram.types", "invalidType");
+        });
+
+        assertTrue(exception.getMessage().contains("Invalid diagram type: invalidType"),
+                "Exception message should indicate invalid diagram type");
+    }
+
+    @Test
+    void testLoadCustomConfig_ValidInputs() {
+        // Arrange
+        Map<String, String> customInputs = new HashMap<>();
+        customInputs.put("input.directory", tempInputDir.toString());
+        customInputs.put("output.directory", tempOutputDir.toString());
+        customInputs.put("diagram.types", "class");
+
+        // Act
+        configManager.loadCustomConfig(customInputs);
+
+        // Assert
+        assertEquals(tempInputDir.toString(), configManager.getProperty("input.directory"), "Custom input directory should be set correctly");
+        assertEquals(tempOutputDir.toString(), configManager.getProperty("output.directory"), "Custom output directory should be set correctly");
+        assertEquals("class", configManager.getProperty("diagram.types"), "Custom diagram types should be set correctly");
+    }
+
+    @Test
+    void testLoadCustomConfig_InvalidInputs() {
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            configManager.loadCustomConfig(null);
+        });
+
+        assertTrue(exception.getMessage().contains("Custom inputs cannot be null or empty"),
+                "Exception message should indicate null or empty custom inputs");
+    }
+
+    @Test
+    void testLoadFileConfig_ValidFile() throws IOException {
+        // Arrange
+        Path tempConfigFile = Files.createTempFile("config", ".properties");
         try (FileWriter writer = new FileWriter(tempConfigFile.toFile())) {
-            logger.info("before write in testLoadConfig");
-            writer.write("key1=value1\n");
-            writer.write("key2=value2\n");
-            logger.info("after write in testLoadConfig");
+            writer.write("input.directory=" + tempInputDir.toString() + "\n");
+            writer.write("output.directory=" + tempOutputDir.toString() + "\n");
+            writer.write("diagram.types=class,sequence\n");
         }
 
-        // Load the configuration
-        logger.info("before configManager.loadConfig(tempConfigFile.toString())");
-        configManager.loadConfig(tempConfigFile.toString());
-        logger.info("after configManager.loadConfig(tempConfigFile.toString())");
+        // Act
+        configManager.loadFileConfig(tempConfigFile.toString());
 
-        // Verify the configuration values
-        assertEquals("value1", configManager.getProperty("key1")); // Updated
-        assertEquals("value2", configManager.getProperty("key2")); // Updated
-        logger.info("after assertEquals");
+        // Assert
+        assertEquals(tempInputDir.toString(), configManager.getProperty("input.directory"), "File input directory should be set correctly");
+        assertEquals(tempOutputDir.toString(), configManager.getProperty("output.directory"), "File output directory should be set correctly");
+        assertEquals("class,sequence", configManager.getProperty("diagram.types"), "File diagram types should be set correctly");
     }
 
     @Test
-    void testLoadConfigFileNotFound() {
-        // Attempt to load a non-existent configuration file
+    void testLoadFileConfig_InvalidFile() {
+        // Act & Assert
         IOException exception = assertThrows(IOException.class, () -> {
-            configManager.loadConfig("non_existent_file.properties");
+            configManager.loadFileConfig("nonexistent_file.properties");
         });
 
-        // Verify the exception message
-        assertTrue(exception.getMessage().contains("Failed to load configuration from file"));
+        assertTrue(exception.getMessage().contains("Unable to read file: nonexistent_file.properties"),
+                "Exception message should indicate file read error");
     }
-
-    @Test
-    void testValidateConfigMissingRequiredKeys() throws IOException {
-        // Write an incomplete configuration to the temp file
-        logger.debug("Enters: testValidateConfigMissingRequiredKeys");
-        try (FileWriter writer = new FileWriter(tempConfigFile.toFile())) {
-            writer.write("input.directory=/path/to/input\n");
-        }
-        logger.debug("testValidateConfigMissingRequiredKeys: written an incomplete configuration to the temp file.");
-        // Load the configuration
-        configManager.loadConfig(tempConfigFile.toString());
-        logger.debug("testValidateConfigMissingRequiredKeys: called: configManager.loadConfig(tempConfigFile.toString()) ");
-        // Verify that validation fails due to missing required keys
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            configManager.validateConfig();
-        });
-        logger.debug("testValidateConfigMissingRequiredKeys()>exception.getMessage(): "+ exception.getMessage());
-        assertTrue(exception.getMessage().contains("Missing or empty required configuration"));
-    }
-
-    @Test
-    void testValidateDirectories() throws IOException {
-        // Dynamically construct non-existent paths
-        String inputDir = System.getProperty("user.dir") + System.getProperty("file.separator") + "nonexistentInput";
-        String outputDir = System.getProperty("user.dir") + System.getProperty("file.separator") + "nonexistentOutput";
-
-        // Write a configuration with all required keys
-        try (FileWriter writer = new FileWriter(tempConfigFile.toFile())) {
-            writer.write("input.directory=" + inputDir + "\n");
-            writer.write("output.directory=" + outputDir + "\n");
-            writer.write("diagram.types=class\n");
-          
-            writer.write("logging.level=INFO\n");
-        }
-
-        // Load the configuration
-        configManager.loadConfig(tempConfigFile.toString());
-
-        // Verify that validation fails due to non-existent directories
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            configManager.validateConfig();
-        });
-
-        assertTrue(exception.getMessage().contains("does not exist"));
-    }
-
-    @Test
-    void testValidateDiagramTypes() throws IOException {
-        // Write a configuration with invalid diagram types and all required keys
-        try (FileWriter writer = new FileWriter(tempConfigFile.toFile())) {
-            writer.write("input.directory=/path/to/input\n");
-            writer.write("output.directory=/path/to/output\n");
-            writer.write("diagram.types=invalidType\n");
-            
-            writer.write("logging.level=INFO\n");
-        }
-
-        // Load the configuration
-        configManager.loadConfig(tempConfigFile.toString());
-
-        // Verify that validation fails due to invalid diagram types
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            configManager.validateConfig();
-        });
-
-        assertTrue(exception.getMessage().contains("Invalid value for 'diagram.types'"));
-    }
-
-    @Test
-    void testLoadDefaultSettings() {
-        logger.debug("LoadDefaultSettings test going to call loadDefaultSettings of config maanger");
-        // Load default settings
-        configManager.loadDefaultSettings();
-
-        // Verify default values
-        assertEquals("./input", configManager.getProperty("input.directory"));
-        assertEquals("./output", configManager.getProperty("output.directory"));
-        assertEquals("class,sequence", configManager.getProperty("diagram.types"));
-        
-    }
-
-  */  
-
 }
