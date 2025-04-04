@@ -59,17 +59,18 @@ public class ScenarioBuilder {
         return entryClasses;
     }
 
-    /**
-     * Generates a list of scenarios from the provided CodeEntity objects.
-     * 
-     * This method identifies entry classes and generates scenarios for each entry class
-     * and its methods. Each scenario represents a sequence diagram starting from a specific
-     * method of an entry class.
-     * 
-     * @param codeEntities The list of CodeEntity objects representing the parsed classes.
-     * @return A list of scenarios representing sequence diagrams.
-     * @throws IllegalArgumentException If the codeEntities list is null.
-     */
+/**
+ * Generates a list of scenarios from the provided CodeEntity objects.
+ * 
+ * This method identifies entry classes and generates scenarios for each entry class
+ * and its methods. Each scenario represents a sequence diagram starting from a specific
+ * method of an entry class. The method uses the provided list of CodeEntity objects
+ * to dynamically resolve relationships during traversal.
+ * 
+ * @param codeEntities The list of CodeEntity objects representing the parsed classes.
+ * @return A list of scenarios representing sequence diagrams.
+ * @throws IllegalArgumentException If the codeEntities list is null.
+ */
     public List<Scenario> getScenarios(List<CodeEntity> codeEntities) {
         if (codeEntities == null) {
             throw new IllegalArgumentException("CodeEntities cannot be null");
@@ -91,17 +92,20 @@ public class ScenarioBuilder {
         return scenarios; // Return the list of all scenarios for all entry classes
     }
 
-    /**
-     * Generates a list of scenarios for a given entry class.
-     * 
-     * This method iterates over all methods of the entry class and generates a separate
-     * scenario for each method. Each scenario represents a sequence diagram starting
-     * from the given method and traversing the caller-callee relationships recursively.
-     * 
-     * @param entryClass The entry class to generate scenarios for.
-     * @return A list of scenarios starting from the entry class.
-     * @throws IllegalArgumentException If the entryClass is null.
-     */
+/**
+ * Generates a list of scenarios for a given entry class.
+ * 
+ * This method iterates over all methods of the entry class and generates a separate
+ * scenario for each method. Each scenario represents a sequence diagram starting
+ * from the given method and traversing the caller-callee relationships recursively.
+ * The method uses the provided list of CodeEntity objects to dynamically resolve
+ * callees during traversal.
+ * 
+ * @param entryClass The entry class to generate scenarios for.
+ * @param codeEntities The list of all CodeEntity objects, used to dynamically look up callees.
+ * @return A list of scenarios starting from the entry class.
+ * @throws IllegalArgumentException If the entryClass is null.
+ */
     private List<Scenario> getScenariosByEntryClass(CodeEntity entryClass, List<CodeEntity> codeEntities) {
         if (entryClass == null) {
             throw new IllegalArgumentException("EntryClass cannot be null");
@@ -125,16 +129,19 @@ public class ScenarioBuilder {
         return scenarios;
     }
 
-    /**
+/**
  * Recursively builds a scenario starting from a specific method of an entry class.
  * 
  * This method traverses the caller-callee relationships recursively, adding interactions
  * to the same scenario. It uses a visited set to avoid cycles in the relationship graph.
+ * The method dynamically looks up the full CodeEntity for each callee using the provided
+ * list of CodeEntity objects, ensuring that all relationships are available for traversal.
  * 
  * @param entryClass The entry class to start the scenario.
  * @param startingMethod The method in the entry class that starts the scenario.
  * @param scenario The scenario to build.
  * @param visited A set of visited classes and methods to avoid cycles.
+ * @param codeEntities The list of all CodeEntity objects, used to dynamically look up callees.
  * @throws IllegalArgumentException If any of the arguments are null.
  */
 private void buildScenarioFromMethod(CodeEntity entryClass, String startingMethod, Scenario scenario, Set<String> visited, List<CodeEntity> codeEntities) {
