@@ -1,6 +1,7 @@
 package com.pjsoft.uml.gui;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -82,45 +83,64 @@ public class UMLGeneratorGUI extends Application {
         defaultSettingsOption.setOnAction(event -> customInputsBox.setVisible(false));
         fileSettingsOption.setOnAction(event -> customInputsBox.setVisible(false));
 
-        // Generate Button
-        Button generateButton = new Button("Generate UML Diagrams");
-        generateButton.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        // Progress Indicator
+        ProgressIndicator progressIndicator = new ProgressIndicator();
+        progressIndicator.setVisible(false);
 
         // Success and Error Messages
         Label messageLabel = new Label();
         messageLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: green;");
 
+        // Generate Button
+        Button generateButton = new Button("Generate UML Diagrams");
+        generateButton.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+
         generateButton.setOnAction(event -> {
-            try {
-                ConfigurationManager configManager = ConfigurationManager.getInstance();
-                configManager.clearSettings();
+            progressIndicator.setVisible(true);
+            messageLabel.setText("Generating UML diagrams...");
+            messageLabel.setStyle("-fx-text-fill: blue;");
 
-                if (defaultSettingsOption.isSelected()) {
-                    configManager.loadDefaultConfig();
-                } else if (fileSettingsOption.isSelected()) {
-                    configManager.loadFileConfig("config/application.properties");
-                } else if (customSettingsOption.isSelected()) {
-                    configManager.setProperty("input.directory", inputDirField.getText());
-                    configManager.setProperty("output.directory", outputDirField.getText());
-                    configManager.setProperty("diagram.types", diagramTypesField.getText());
+            // Run the diagram generation in a background thread
+            new Thread(() -> {
+                try {
+                    ConfigurationManager configManager = ConfigurationManager.getInstance();
+                    configManager.clearSettings();
+
+                    if (defaultSettingsOption.isSelected()) {
+                        configManager.loadDefaultConfig();
+                    } else if (fileSettingsOption.isSelected()) {
+                        configManager.loadFileConfig("config/application.properties");
+                    } else if (customSettingsOption.isSelected()) {
+                        configManager.setProperty("input.directory", inputDirField.getText());
+                        configManager.setProperty("output.directory", outputDirField.getText());
+                        configManager.setProperty("diagram.types", diagramTypesField.getText());
+                    }
+
+                    UMLDiagramGenerator generator = new UMLDiagramGenerator(configManager);
+                    generator.generateDiagrams();
+
+                    // Update the UI on the JavaFX Application Thread
+                    Platform.runLater(() -> {
+                        progressIndicator.setVisible(false);
+                        messageLabel.setText("UML diagrams generated successfully!");
+                        messageLabel.setStyle("-fx-text-fill: green;");
+                    });
+                } catch (Exception e) {
+                    Platform.runLater(() -> {
+                        progressIndicator.setVisible(false);
+                        messageLabel.setText("Error: " + e.getMessage());
+                        messageLabel.setStyle("-fx-text-fill: red;");
+                    });
                 }
-
-                UMLDiagramGenerator generator = new UMLDiagramGenerator(configManager);
-                generator.generateDiagrams();
-                messageLabel.setText("UML diagrams generated successfully!");
-                messageLabel.setStyle("-fx-text-fill: green;");
-            } catch (Exception e) {
-                messageLabel.setText("Error: " + e.getMessage());
-                messageLabel.setStyle("-fx-text-fill: red;");
-            }
+            }).start();
         });
 
         // Layout
-        VBox layout = new VBox(15, bannerLabel, configOptionsLabel, defaultSettingsOption, fileSettingsOption, customSettingsOption, customInputsBox, generateButton, messageLabel);
+        VBox layout = new VBox(15, bannerLabel, configOptionsLabel, defaultSettingsOption, fileSettingsOption, customSettingsOption, customInputsBox, generateButton, progressIndicator, messageLabel);
         layout.setPadding(new Insets(20));
 
         // Scene and Stage
-        Scene scene = new Scene(layout, 600, 500);
+        Scene scene = new Scene(layout, 600, 550);
         primaryStage.setTitle("UML Diagram Generator");
         primaryStage.setScene(scene);
         primaryStage.show();
