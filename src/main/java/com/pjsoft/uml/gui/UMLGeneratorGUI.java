@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -141,7 +142,8 @@ public class UMLGeneratorGUI extends Application {
 
         // Scene and Stage
         Scene scene = new Scene(layout, 600, 550);
-        primaryStage.setTitle("UML Diagram Generator");
+        primaryStage.setTitle("PJ Java2UML Diagram Generator");
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icons/favicon-32x32.png")));
         primaryStage.setScene(scene);
         primaryStage.show();
     }
