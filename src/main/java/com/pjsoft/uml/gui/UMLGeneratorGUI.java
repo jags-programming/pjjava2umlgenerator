@@ -5,11 +5,12 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import com.pjsoft.uml.ConfigurationManager;
 import com.pjsoft.uml.UMLDiagramGenerator;
 
-import java.util.Map;
+import java.io.File;
 
 public class UMLGeneratorGUI extends Application {
 
@@ -35,13 +36,45 @@ public class UMLGeneratorGUI extends Application {
         // Input Fields for Custom Configuration
         Label inputDirLabel = new Label("Input Directory:");
         TextField inputDirField = new TextField();
+        Button inputDirButton = new Button("Browse...");
+        inputDirButton.setOnAction(event -> {
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            directoryChooser.setTitle("Select Input Directory");
+            File selectedDirectory = directoryChooser.showDialog(primaryStage);
+            if (selectedDirectory != null) {
+                inputDirField.setText(selectedDirectory.getAbsolutePath());
+            }
+        });
+
         Label outputDirLabel = new Label("Output Directory:");
         TextField outputDirField = new TextField();
+        Button outputDirButton = new Button("Browse...");
+        outputDirButton.setOnAction(event -> {
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            directoryChooser.setTitle("Select Output Directory");
+            File selectedDirectory = directoryChooser.showDialog(primaryStage);
+            if (selectedDirectory != null) {
+                outputDirField.setText(selectedDirectory.getAbsolutePath());
+            }
+        });
+
         Label diagramTypesLabel = new Label("Diagram Types (class,sequence):");
         TextField diagramTypesField = new TextField("class,sequence");
 
-        VBox customInputsBox = new VBox(10, inputDirLabel, inputDirField, outputDirLabel, outputDirField, diagramTypesLabel, diagramTypesField);
-        customInputsBox.setPadding(new Insets(10));
+        GridPane customInputsGrid = new GridPane();
+        customInputsGrid.setHgap(10);
+        customInputsGrid.setVgap(10);
+        customInputsGrid.setPadding(new Insets(10));
+        customInputsGrid.add(inputDirLabel, 0, 0);
+        customInputsGrid.add(inputDirField, 1, 0);
+        customInputsGrid.add(inputDirButton, 2, 0);
+        customInputsGrid.add(outputDirLabel, 0, 1);
+        customInputsGrid.add(outputDirField, 1, 1);
+        customInputsGrid.add(outputDirButton, 2, 1);
+        customInputsGrid.add(diagramTypesLabel, 0, 2);
+        customInputsGrid.add(diagramTypesField, 1, 2);
+
+        VBox customInputsBox = new VBox(10, customInputsGrid);
         customInputsBox.setVisible(false);
 
         // Show/Hide Custom Inputs Based on Selection
@@ -87,7 +120,7 @@ public class UMLGeneratorGUI extends Application {
         layout.setPadding(new Insets(20));
 
         // Scene and Stage
-        Scene scene = new Scene(layout, 600, 450);
+        Scene scene = new Scene(layout, 600, 500);
         primaryStage.setTitle("UML Diagram Generator");
         primaryStage.setScene(scene);
         primaryStage.show();
