@@ -1,5 +1,7 @@
 package com.pjsoft.uml.gui;
 
+
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -18,6 +20,28 @@ public class UMLGeneratorGUI extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        // Create Tabs
+        TabPane tabPane = new TabPane();
+
+        // Tab 1: Configuration
+        Tab configTab = new Tab("Configuration", createConfigurationTab(primaryStage));
+        configTab.setClosable(false);
+
+        // Tab 2: Diagram Preview (Placeholder for now)
+        Tab previewTab = new Tab("Diagram Preview", createPreviewTab());
+        previewTab.setClosable(false);
+
+        tabPane.getTabs().addAll(configTab, previewTab);
+
+        // Scene and Stage
+        Scene scene = new Scene(tabPane, 800, 600);
+        primaryStage.setTitle("PJ Java2UML Diagram Generator");
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icons/favicon-32x32.png")));
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    private VBox createConfigurationTab(Stage primaryStage) {
         // Welcome Banner
         Label bannerLabel = new Label("Welcome to the UML Diagram Generator!");
         bannerLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: blue;");
@@ -34,6 +58,8 @@ public class UMLGeneratorGUI extends Application {
         fileSettingsOption.setToggleGroup(configOptionsGroup);
         customSettingsOption.setToggleGroup(configOptionsGroup);
         defaultSettingsOption.setSelected(true);
+
+        VBox configOptionsBox = new VBox(10, configOptionsLabel, defaultSettingsOption, fileSettingsOption, customSettingsOption);
 
         // Input Fields for Custom Configuration
         Label inputDirLabel = new Label("Input Directory:");
@@ -76,7 +102,10 @@ public class UMLGeneratorGUI extends Application {
         customInputsGrid.add(diagramTypesLabel, 0, 2);
         customInputsGrid.add(diagramTypesField, 1, 2);
 
-        VBox customInputsBox = new VBox(10, customInputsGrid);
+        TitledPane customInputsPane = new TitledPane("Custom Inputs", customInputsGrid);
+        customInputsPane.setCollapsible(false);
+
+        VBox customInputsBox = new VBox(10, customInputsPane);
         customInputsBox.setVisible(false);
 
         // Show/Hide Custom Inputs Based on Selection
@@ -136,16 +165,16 @@ public class UMLGeneratorGUI extends Application {
             }).start();
         });
 
-        // Layout
-        VBox layout = new VBox(15, bannerLabel, configOptionsLabel, defaultSettingsOption, fileSettingsOption, customSettingsOption, customInputsBox, generateButton, progressIndicator, messageLabel);
-        layout.setPadding(new Insets(20));
+        // Add padding to the parent VBox
+        VBox layout = new VBox(15, bannerLabel, configOptionsBox, customInputsBox, generateButton, progressIndicator, messageLabel);
+        layout.setPadding(new Insets(20)); // Add padding around the entire layout
+        return layout;
+    }
 
-        // Scene and Stage
-        Scene scene = new Scene(layout, 600, 550);
-        primaryStage.setTitle("PJ Java2UML Diagram Generator");
-        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icons/favicon-32x32.png")));
-        primaryStage.setScene(scene);
-        primaryStage.show();
+    private VBox createPreviewTab() {
+        Label placeholder = new Label("Diagram Preview will be displayed here.");
+        placeholder.setStyle("-fx-font-size: 14px; -fx-text-fill: gray;");
+        return new VBox(10, placeholder);
     }
 
     public static void main(String[] args) {
