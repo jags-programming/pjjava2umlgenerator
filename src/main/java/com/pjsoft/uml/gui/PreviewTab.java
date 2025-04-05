@@ -21,18 +21,26 @@ public class PreviewTab {
     private final BorderPane layout;
 
     public PreviewTab(Stage primaryStage) {
+        // File/Folder Selection
         Label selectionLabel = new Label("Select a folder:");
         TextField pathField = new TextField();
         pathField.setEditable(false);
         Button browseButton = new Button("Browse...");
 
+        // Error Message Label
+        Label errorMessageLabel = new Label();
+        errorMessageLabel.setStyle("-fx-text-fill: red; -fx-font-size: 14px;");
+        errorMessageLabel.setVisible(false); // Hidden by default
+
+        // Image Display Area
         ImageView imageView = new ImageView();
         imageView.setPreserveRatio(true);
 
+        // Add Zoom Functionality
         Scale scale = new Scale(1, 1, 0, 0);
         imageView.getTransforms().add(scale);
 
-        // ✅ NEW: ScrollPane for zoom + pan
+        // ScrollPane for ImageView
         ScrollPane imageContainer = new ScrollPane(imageView);
         imageContainer.setPannable(true);
         imageContainer.setFitToWidth(true);
@@ -40,34 +48,37 @@ public class PreviewTab {
         imageContainer.setStyle("-fx-background-color: #f0f0f0;");
         imageContainer.setPadding(new Insets(10));
 
+        // Toolbar with Zoom In and Zoom Out Buttons
         Button zoomInButton = new Button("Zoom In");
         Button zoomOutButton = new Button("Zoom Out");
 
-        // ✅ Optional: Pan toggle
-        ToggleButton panToggle = new ToggleButton("🖐️ Pan");
-        panToggle.setSelected(true);
-        panToggle.setOnAction(e -> imageContainer.setPannable(panToggle.isSelected()));
-
+        // Zoom In Button Action
         zoomInButton.setOnAction(event -> {
             double newScaleX = scale.getX() * 1.1;
             double newScaleY = scale.getY() * 1.1;
+
+            // Limit zoom levels
             if (newScaleX <= 5) {
                 scale.setX(newScaleX);
                 scale.setY(newScaleY);
             }
         });
 
+        // Zoom Out Button Action
         zoomOutButton.setOnAction(event -> {
             double newScaleX = scale.getX() * 0.9;
             double newScaleY = scale.getY() * 0.9;
+
+            // Limit zoom levels
             if (newScaleX >= 0.5) {
                 scale.setX(newScaleX);
                 scale.setY(newScaleY);
             }
         });
 
-        ToolBar toolBar = new ToolBar(zoomInButton, zoomOutButton, panToggle);
+        ToolBar toolBar = new ToolBar(zoomInButton, zoomOutButton);
 
+        // Navigation Buttons
         Button leftButton = new Button("<");
         Button rightButton = new Button(">");
         leftButton.setDisable(true);
@@ -76,20 +87,28 @@ public class PreviewTab {
         HBox navigationBox = new HBox(10, leftButton, rightButton);
         navigationBox.setAlignment(Pos.CENTER);
 
+        // Layout for File/Folder Selection
         HBox selectionBox = new HBox(10, selectionLabel, pathField, browseButton);
         selectionBox.setAlignment(Pos.CENTER_LEFT);
         selectionBox.setPadding(new Insets(10));
 
+        // Combine Selection Box and Error Message
+        VBox topSection = new VBox(10, selectionBox, errorMessageLabel);
+
+        // BorderPane Layout
         layout = new BorderPane();
-        layout.setTop(new VBox(toolBar, selectionBox));
+        layout.setTop(new VBox(toolBar, topSection)); // Add toolbar and top section
         layout.setCenter(imageContainer);
         layout.setBottom(navigationBox);
 
+        // List to Store Image Files
         List<File> imageFiles = new ArrayList<>();
         final int[] currentIndex = {0};
 
-        loadDefaultOutputDirectory(imageFiles, pathField, imageView, leftButton, rightButton, currentIndex, scale);
+        // Load Default Output Directory
+        loadDefaultOutputDirectory(imageFiles, pathField, imageView, leftButton, rightButton, currentIndex, scale, errorMessageLabel);
 
+        // Browse Button Action
         browseButton.setOnAction(event -> {
             DirectoryChooser directoryChooser = new DirectoryChooser();
             directoryChooser.setTitle("Select Folder");
@@ -111,10 +130,13 @@ public class PreviewTab {
                     resetImageView(imageView, scale);
                     displayImage(imageFiles.get(currentIndex[0]), imageView);
                     updateNavigationButtons(leftButton, rightButton, currentIndex[0], imageFiles.size());
+                    errorMessageLabel.setVisible(false); // Hide error message
                 } else {
                     imageView.setImage(null);
                     leftButton.setDisable(true);
                     rightButton.setDisable(true);
+                    errorMessageLabel.setText("No images found in the selected directory.");
+                    errorMessageLabel.setVisible(true); // Show error message
                 }
             }
         });
@@ -139,7 +161,8 @@ public class PreviewTab {
     }
 
     private void loadDefaultOutputDirectory(List<File> imageFiles, TextField pathField, ImageView imageView,
-                                            Button leftButton, Button rightButton, int[] currentIndex, Scale scale) {
+                                            Button leftButton, Button rightButton, int[] currentIndex, Scale scale,
+                                            Label errorMessageLabel) {
         try {
             ConfigurationManager configManager = ConfigurationManager.getInstance();
             String outputDirectory = configManager.getProperty("output.directory");
@@ -162,14 +185,19 @@ public class PreviewTab {
                         resetImageView(imageView, scale);
                         displayImage(imageFiles.get(currentIndex[0]), imageView);
                         updateNavigationButtons(leftButton, rightButton, currentIndex[0], imageFiles.size());
+                        errorMessageLabel.setVisible(false); // Hide error message
                     } else {
                         pathField.clear();
+                        errorMessageLabel.setText("No images found in the default output directory.");
+                        errorMessageLabel.setVisible(true); // Show error message
                     }
                 }
             }
         } catch (Exception e) {
             System.err.println("Error loading default output directory: " + e.getMessage());
             pathField.clear();
+            errorMessageLabel.setText("Error loading default output directory.");
+            errorMessageLabel.setVisible(true); // Show error message
         }
     }
 
