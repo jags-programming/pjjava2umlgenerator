@@ -63,6 +63,9 @@ public class ConfigurationTab {
         Label diagramTypesLabel = new Label("Diagram Types (class,sequence):");
         TextField diagramTypesField = new TextField("class,sequence");
 
+        Label includePackageLabel = new Label("Include Package (default: all):");
+        TextField includePackageField = new TextField();
+
         GridPane customInputsGrid = new GridPane();
         customInputsGrid.setHgap(10);
         customInputsGrid.setVgap(10);
@@ -75,6 +78,8 @@ public class ConfigurationTab {
         customInputsGrid.add(outputDirButton, 2, 1);
         customInputsGrid.add(diagramTypesLabel, 0, 2);
         customInputsGrid.add(diagramTypesField, 1, 2);
+        customInputsGrid.add(includePackageLabel, 0, 3);
+        customInputsGrid.add(includePackageField, 1, 3);
 
         TitledPane customInputsPane = new TitledPane("Custom Inputs", customInputsGrid);
         customInputsPane.setCollapsible(false);
@@ -110,7 +115,6 @@ public class ConfigurationTab {
                     ConfigurationManager configManager = ConfigurationManager.getInstance();
                     configManager.clearSettings();
 
-
                     if (defaultSettingsOption.isSelected()) {
                         configManager.loadDefaultConfig();
                     } else if (fileSettingsOption.isSelected()) {
@@ -119,6 +123,7 @@ public class ConfigurationTab {
                         configManager.setProperty("input.directory", inputDirField.getText());
                         configManager.setProperty("output.directory", outputDirField.getText());
                         configManager.setProperty("diagram.types", diagramTypesField.getText());
+                        configManager.setProperty("include.package", includePackageField.getText());
                     }
 
                     UMLDiagramGenerator generator = new UMLDiagramGenerator(configManager);
