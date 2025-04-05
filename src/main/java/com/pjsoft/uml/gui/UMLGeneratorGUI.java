@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class UMLGeneratorGUI extends Application {
@@ -27,6 +28,7 @@ public class UMLGeneratorGUI extends Application {
         Scene scene = new Scene(tabPane, 800, 600);
         primaryStage.setTitle("PJ Java2UML Diagram Generator");
         primaryStage.setScene(scene);
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icons/favicon-32x32.png")));
         primaryStage.show();
     }
 

@@ -1,5 +1,6 @@
 package com.pjsoft.uml.gui;
 
+import com.pjsoft.uml.ConfigurationManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -53,6 +54,9 @@ public class PreviewTab {
         List<File> imageFiles = new ArrayList<>();
         final int[] currentIndex = {0};
 
+        // Load Default Output Directory
+        loadDefaultOutputDirectory(imageFiles, pathField, imageView, leftButton, rightButton, currentIndex);
+
         // Browse Button Action
         browseButton.setOnAction(event -> {
             DirectoryChooser directoryChooser = new DirectoryChooser();
@@ -101,6 +105,44 @@ public class PreviewTab {
                 updateNavigationButtons(leftButton, rightButton, currentIndex[0], imageFiles.size());
             }
         });
+    }
+
+    private void loadDefaultOutputDirectory(List<File> imageFiles, TextField pathField, ImageView imageView, Button leftButton, Button rightButton, int[] currentIndex) {
+        try {
+            ConfigurationManager configManager = ConfigurationManager.getInstance();
+
+            // Retrieve the output directory
+            String outputDirectory = configManager.getProperty("output.directory");
+            if (outputDirectory == null || outputDirectory.isEmpty()) {
+                outputDirectory = configManager.getDefaultSettings().get("output.directory");
+            }
+
+            if (outputDirectory != null) {
+                File outputDir = new File(outputDirectory);
+                if (outputDir.exists() && outputDir.isDirectory()) {
+                    pathField.setText(outputDirectory);
+
+                    // Load all image files from the output directory
+                    File[] files = outputDir.listFiles((dir, name) -> name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg"));
+                    if (files != null) {
+                        imageFiles.addAll(Arrays.asList(files));
+                    }
+
+                    // Display the first image
+                    if (!imageFiles.isEmpty()) {
+                        currentIndex[0] = 0;
+                        displayImage(imageFiles.get(currentIndex[0]), imageView);
+                        updateNavigationButtons(leftButton, rightButton, currentIndex[0], imageFiles.size());
+                    } else {
+                        // No images found, leave the TextField blank
+                        pathField.clear();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading default output directory: " + e.getMessage());
+            pathField.clear();
+        }
     }
 
     private void displayImage(File file, ImageView imageView) {
