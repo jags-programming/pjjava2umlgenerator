@@ -1,9 +1,12 @@
 package com.pjsoft.uml.gui;
 
+
 import com.pjsoft.uml.ConfigurationManager;
 import com.pjsoft.uml.UMLDiagramGenerator;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.DirectoryChooser;
@@ -12,13 +15,55 @@ import javafx.stage.Stage;
 import java.io.File;
 
 public class ConfigurationTab {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ConfigurationTab.class);
 
     private final VBox layout;
+    private Scene scene;
+
+    public void setScene(Scene scene) {
+        this.scene = scene;
+    }
 
     public ConfigurationTab(Stage primaryStage) {
-        // Welcome Banner
-        Label bannerLabel = new Label("Welcome to the UML Diagram Generator!");
-        bannerLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: blue;");
+        // Welcome message
+        Label bannerLabel = new Label("Welcome to UML Generator");
+        bannerLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        // Radio buttons for themes
+        ToggleGroup themeToggleGroup = new ToggleGroup();
+
+        RadioButton lightTheme = new RadioButton("Light");
+        lightTheme.setToggleGroup(themeToggleGroup);
+        lightTheme.setOnAction(e -> setStyle(scene, "style.light"));
+
+        RadioButton darkTheme = new RadioButton("Dark");
+        darkTheme.setToggleGroup(themeToggleGroup);
+        darkTheme.setOnAction(e -> setStyle(scene, "style.dark"));
+
+        RadioButton pastelTheme = new RadioButton("Pastel");
+        pastelTheme.setToggleGroup(themeToggleGroup);
+        pastelTheme.setOnAction(e -> setStyle(scene, "style.pastel"));
+
+        // Default selection
+        lightTheme.setSelected(true);
+
+        // HBox for radio buttons
+        HBox themeBox = new HBox(10, lightTheme, darkTheme, pastelTheme);
+
+        // Align everything nicely
+        themeBox.setAlignment(Pos.CENTER_RIGHT);
+        HBox.setHgrow(themeBox, Priority.NEVER);
+        HBox.setHgrow(bannerLabel, Priority.ALWAYS);
+
+        // Top row combining welcome + themes
+        HBox topRow = new HBox();
+        topRow.setPadding(new Insets(10));
+        topRow.setSpacing(10);
+        topRow.setAlignment(Pos.CENTER_LEFT);
+        // topRow.getChildren().addAll(bannerLabel, themeBox);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        topRow.getChildren().addAll(bannerLabel, spacer, themeBox);
 
         // Configuration Options
         Label configOptionsLabel = new Label("How do you want to proceed?");
@@ -33,7 +78,8 @@ public class ConfigurationTab {
         customSettingsOption.setToggleGroup(configOptionsGroup);
         defaultSettingsOption.setSelected(true);
 
-        VBox configOptionsBox = new VBox(10, configOptionsLabel, defaultSettingsOption, fileSettingsOption, customSettingsOption);
+        VBox configOptionsBox = new VBox(10, configOptionsLabel, defaultSettingsOption, fileSettingsOption,
+                customSettingsOption);
 
         // Input Fields for Custom Configuration
         Label inputDirLabel = new Label("Input Directory:");
@@ -146,11 +192,64 @@ public class ConfigurationTab {
         });
 
         // Add padding to the parent VBox
-        layout = new VBox(15, bannerLabel, configOptionsBox, customInputsBox, generateButton, progressIndicator, messageLabel);
+ 
+        layout = new VBox(15, topRow, configOptionsBox, customInputsBox, generateButton, progressIndicator,
+                messageLabel);
+
         layout.setPadding(new Insets(20)); // Add padding around the entire layout
     }
 
     public VBox getLayout() {
         return layout;
+    }
+
+    private void setStyle(Scene scene, String styleProperty) {
+        if (scene == null) {
+            logger.error("Scene not set");
+            return;
+        }
+        ConfigurationManager configurationManager = ConfigurationManager.getInstance();
+
+        String cssFilePath = configurationManager.getProperty(styleProperty);
+
+        File cssFile = new File(cssFilePath);
+        if (cssFile.exists()) {
+            scene.getStylesheets().clear();
+
+            scene.getStylesheets().add(cssFile.toURI().toString());
+        } else {
+            logger.error("Stylesheet not found at: " + cssFile.getAbsolutePath());
+            logger.error("Either application.properties is not loaded or property in file is missing");
+            logger.info("Going to load styles from default path if it exists");
+
+            String style;
+            switch (styleProperty) {
+                case "style.dark":
+                    style = "style_dark.css";
+                    break;
+                case "style.light":
+                    style = "style_light.css";
+                    break;
+                case "style.pastel":
+                    style = "style_pastel.css";
+                    break;
+                default:
+                    style = "style_light.css";
+                    break;
+            }
+
+            File cssFromDefaultLocation = new File("styles/" + style);
+
+            if (cssFromDefaultLocation.exists()) {
+                scene.getStylesheets().clear();
+
+                scene.getStylesheets().add(cssFromDefaultLocation.toURI().toString());
+                logger.info("Style loaded from default location: " + cssFromDefaultLocation.toURI().toString());
+            } else {
+
+                logger.error("css files not present in default location, can't apply theme.");
+            }
+        }
+
     }
 }

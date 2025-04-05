@@ -86,7 +86,7 @@ public class PreviewTab {
         layout.setBottom(navigationBox);
 
         List<File> imageFiles = new ArrayList<>();
-        final int[] currentIndex = {0};
+        final int[] currentIndex = { 0 };
 
         loadDefaultOutputDirectory(imageFiles, pathField, imageView, leftButton, rightButton, currentIndex, scale);
 
@@ -100,8 +100,8 @@ public class PreviewTab {
                 pathField.setText(selectedDirectory.getAbsolutePath());
                 imageFiles.clear();
 
-                File[] files = selectedDirectory.listFiles((dir, name) ->
-                        name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg"));
+                File[] files = selectedDirectory.listFiles(
+                        (dir, name) -> name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg"));
                 if (files != null) {
                     imageFiles.addAll(Arrays.asList(files));
                 }
@@ -139,7 +139,7 @@ public class PreviewTab {
     }
 
     private void loadDefaultOutputDirectory(List<File> imageFiles, TextField pathField, ImageView imageView,
-                                            Button leftButton, Button rightButton, int[] currentIndex, Scale scale) {
+            Button leftButton, Button rightButton, int[] currentIndex, Scale scale) {
         try {
             ConfigurationManager configManager = ConfigurationManager.getInstance();
             String outputDirectory = configManager.getProperty("output.directory");
@@ -151,8 +151,8 @@ public class PreviewTab {
                 File outputDir = new File(outputDirectory);
                 if (outputDir.exists() && outputDir.isDirectory()) {
                     pathField.setText(outputDirectory);
-                    File[] files = outputDir.listFiles((dir, name) ->
-                            name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg"));
+                    File[] files = outputDir.listFiles(
+                            (dir, name) -> name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg"));
                     if (files != null) {
                         imageFiles.addAll(Arrays.asList(files));
                     }
