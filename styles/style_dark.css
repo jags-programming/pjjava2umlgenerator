@@ -1,0 +1,21 @@
+.root {
+    -fx-background-color: #121212;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.label {
+    -fx-text-fill: #FFFFFF;
+}
+
+.button {
+    -fx-background-color: #BB86FC;
+    -fx-text-fill: black;
+    -fx-background-radius: 8;
+}
+
+.text-field {
+    -fx-background-color: #1E1E1E;
+    -fx-border-color: #333333;
+    -fx-border-radius: 6;
+    -fx-text-fill: #FFFFFF;
+}
