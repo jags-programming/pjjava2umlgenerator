@@ -4,6 +4,9 @@
 # Ignore Maven target directory
 target/
 
+# Ignore htmldoc
+htmldoc/
+
 # Ignore logs
 *.log
 

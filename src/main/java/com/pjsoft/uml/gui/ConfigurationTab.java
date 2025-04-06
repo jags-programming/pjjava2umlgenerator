@@ -50,6 +50,8 @@ public class ConfigurationTab {
 
     public void setScene(Scene scene) {
         this.scene = scene;
+        // Apply the default theme initially
+        setStyle(scene, "style.light");
     }
 
     public VBox getLayout() {

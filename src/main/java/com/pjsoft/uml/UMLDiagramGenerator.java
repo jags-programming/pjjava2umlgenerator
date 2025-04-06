@@ -124,6 +124,14 @@ public class UMLDiagramGenerator {
                 storageService.storeDiagram(sequenceDiagramPath, "sequence");
             }
 
+            // Generate HTML documentation
+        HTMLDocumentationGenerator htmlGenerator = new HTMLDocumentationGenerator();
+        htmlGenerator.generateHTMLDocumentation(
+            configurationManager.getProperty("output.directory"),
+            configurationManager.getProperty("htmldoc.directory") 
+        );
+
+
             logger.info("UML diagrams generated successfully.");
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate UML diagrams: " + e.getMessage(), e);
