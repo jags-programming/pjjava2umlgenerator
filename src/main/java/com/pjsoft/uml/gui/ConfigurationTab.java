@@ -12,6 +12,8 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 public class ConfigurationTab {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ConfigurationTab.class);
@@ -56,7 +58,7 @@ public class ConfigurationTab {
 
     private HBox createTopRow() {
         Label bannerLabel = new Label("Welcome to UML Generator");
-
+        bannerLabel.setId("bannerLabel");
         ToggleGroup themeToggleGroup = new ToggleGroup();
         RadioButton lightTheme = createThemeRadio("Light", themeToggleGroup, "style.light");
         RadioButton darkTheme = createThemeRadio("Dark", themeToggleGroup, "style.dark");
@@ -192,11 +194,15 @@ public class ConfigurationTab {
         }
 
         ConfigurationManager configManager = ConfigurationManager.getInstance();
-        String cssFilePath = configManager.getProperty(styleProperty);
-        File cssFile = new File(cssFilePath);
-
-        if (cssFile.exists()) {
-            scene.getStylesheets().setAll(cssFile.toURI().toString());
+        String themeFilePath = configManager.getProperty(styleProperty);
+        String commonStyleFilePath = configManager.getProperty("style.common");
+        File themeFile = new File(themeFilePath);
+        File commonStyleFile = new File(commonStyleFilePath);
+      
+        if (themeFile.exists() && commonStyleFile.exists()) {
+            String commonStyleURI = commonStyleFile.toURI().toString();
+            String themeStyleURI = themeFile.toURI().toString();
+            scene.getStylesheets().setAll(themeStyleURI, commonStyleURI);
         } else {
             logger.warn("Falling back to default styles");
             loadFallbackStyle(scene, styleProperty);
@@ -204,19 +210,24 @@ public class ConfigurationTab {
     }
 
     private void loadFallbackStyle(Scene scene, String styleProperty) {
+        
         String fallbackFile;
         switch (styleProperty) {
-            case "style.dark" -> fallbackFile = "style_dark.css";
-            case "style.pastel" -> fallbackFile = "style_pastel.css";
-            default -> fallbackFile = "style_light.css";
+            case "style.dark" -> fallbackFile = "styles/style_dark.css";
+            case "style.pastel" -> fallbackFile = "styles/style_pastel.css";
+            default -> fallbackFile = "styles/style_light.css";
         }
-
-        File fallback = new File("styles/" + fallbackFile);
-        if (fallback.exists()) {
-            scene.getStylesheets().setAll(fallback.toURI().toString());
-            logger.info("Fallback style loaded from: " + fallback.getAbsolutePath());
+        
+        File defaultThemeFile = new File(fallbackFile);
+        File commonStyleFile =new File("styles/style_common.css");
+        if (defaultThemeFile.exists() && commonStyleFile.exists()) {
+            String themeURI = defaultThemeFile.toURI().toString();
+            String commonStyleURI = commonStyleFile.toURI().toString();
+            scene.getStylesheets().setAll(themeURI,commonStyleURI);
+            
         } else {
             logger.error("No fallback style found either.");
+          
         }
     }
 }

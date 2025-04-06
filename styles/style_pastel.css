@@ -1,21 +1,84 @@
+/* style_pastel.css */
+
+/* Pastel background */
 .root {
     -fx-background-color: #FAF9F6;
-    -fx-font-family: "Segoe UI", sans-serif;
 }
 
-.label {
+/* Label color */
+.label,
+.radio-button,
+.custom-inputs-grid .label {
     -fx-text-fill: #333333;
 }
 
-.button {
+/* Button pastel tone */
+.button,
+.custom-inputs-grid .button {
     -fx-background-color: #A7C7E7;
     -fx-text-fill: #333333;
     -fx-background-radius: 8;
 }
 
-.text-field {
+.button:hover,
+.custom-inputs-grid .button:hover {
+    -fx-background-color: #91B8DF;
+}
+
+.button:focused {
+    -fx-effect: dropshadow(three-pass-box, #A7C7E7, 5, 0.3, 0, 0);
+}
+
+/* Text field with pastel border */
+.text-field,
+.custom-inputs-grid .text-field {
     -fx-background-color: #FFFFFF;
     -fx-border-color: #FFD6E0;
     -fx-border-radius: 6;
     -fx-text-fill: #333333;
 }
+
+.custom-inputs-grid .text-field:focused {
+    -fx-border-color: #FFB6C1;
+    -fx-effect: dropshadow(three-pass-box, #FFD6E0, 5, 0.3, 0, 0);
+}
+
+.custom-inputs-grid .text-field:hover {
+    -fx-border-color: #FFC0CB;
+}
+
+.custom-inputs-grid .text-field:focused:hover {
+    -fx-border-color: #FFB6C1;
+}
+
+.progress-indicator {
+    -fx-progress-color: #A7C7E7;
+}
+
+.custom-inputs-titled-pane {
+    -fx-background-color: #F5F5F5;
+    -fx-text-fill: #333333;
+    -fx-border-color: #E6E6E6;
+    -fx-border-width: 1;
+}
+
+.custom-inputs-titled-pane > .title {
+    -fx-background-color: #EAF3FB;
+    -fx-border-color: #E6E6E6;
+}
+
+.custom-inputs-titled-pane > .title > .text {
+    -fx-fill: #333333;
+    -fx-font-weight: bold;
+}
+
+.custom-inputs-titled-pane > .content {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E6E6E6;
+}
+
+#bannerLabel {
+    -fx-text-fill: #5A5A89; /* Soft, muted purple */
+   
+}
+
