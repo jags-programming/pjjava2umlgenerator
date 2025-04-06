@@ -37,7 +37,7 @@ public class PreviewTab {
         imageContainer.setPannable(true);
         imageContainer.setFitToWidth(true);
         imageContainer.setFitToHeight(true);
-        imageContainer.setStyle("-fx-background-color: #f0f0f0;");
+        //imageContainer.setStyle("-fx-background-color: #f0f0f0;");
         imageContainer.setPadding(new Insets(10));
 
         Button zoomInButton = new Button("Zoom In");

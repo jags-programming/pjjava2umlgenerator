@@ -1,6 +1,5 @@
 package com.pjsoft.uml.gui;
 
-
 import com.pjsoft.uml.ConfigurationManager;
 import com.pjsoft.uml.UMLDiagramGenerator;
 import javafx.application.Platform;
@@ -20,142 +19,127 @@ public class ConfigurationTab {
     private final VBox layout;
     private Scene scene;
 
+    private final VBox customInputsBox = new VBox(10);
+    private final ToggleGroup configOptionsGroup = new ToggleGroup();
+    private final RadioButton defaultSettingsOption = new RadioButton("Use default settings");
+    private final RadioButton fileSettingsOption = new RadioButton("Load settings from a configuration file");
+    private final RadioButton customSettingsOption = new RadioButton("Enter custom inputs interactively");
+
+    // Fields used across methods
+    private final TextField inputDirField = new TextField();
+    private final TextField outputDirField = new TextField();
+    private final TextField diagramTypesField = new TextField("class,sequence");
+    private final TextField includePackageField = new TextField();
+    private final Label messageLabel = new Label();
+    private final ProgressIndicator progressIndicator = new ProgressIndicator();
+
+    public ConfigurationTab(Stage primaryStage) {
+        HBox topRow = createTopRow();
+        VBox configOptionsBox = createConfigurationOptionsBox();
+        TitledPane customInputsPane = createCustomInputsPane(primaryStage);
+        customInputsBox.getChildren().add(customInputsPane);
+        customInputsBox.setVisible(false);
+
+        Button generateButton = createGenerateButton();
+
+        layout = new VBox(15, topRow, configOptionsBox, customInputsBox, generateButton, progressIndicator, messageLabel);
+        layout.setPadding(new Insets(20));
+    }
+
     public void setScene(Scene scene) {
         this.scene = scene;
     }
 
-    public ConfigurationTab(Stage primaryStage) {
-        // Welcome message
+    public VBox getLayout() {
+        return layout;
+    }
+
+    private HBox createTopRow() {
         Label bannerLabel = new Label("Welcome to UML Generator");
-        bannerLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        // Radio buttons for themes
         ToggleGroup themeToggleGroup = new ToggleGroup();
-
-        RadioButton lightTheme = new RadioButton("Light");
-        lightTheme.setToggleGroup(themeToggleGroup);
-        lightTheme.setOnAction(e -> setStyle(scene, "style.light"));
-
-        RadioButton darkTheme = new RadioButton("Dark");
-        darkTheme.setToggleGroup(themeToggleGroup);
-        darkTheme.setOnAction(e -> setStyle(scene, "style.dark"));
-
-        RadioButton pastelTheme = new RadioButton("Pastel");
-        pastelTheme.setToggleGroup(themeToggleGroup);
-        pastelTheme.setOnAction(e -> setStyle(scene, "style.pastel"));
-
-        // Default selection
+        RadioButton lightTheme = createThemeRadio("Light", themeToggleGroup, "style.light");
+        RadioButton darkTheme = createThemeRadio("Dark", themeToggleGroup, "style.dark");
+        RadioButton pastelTheme = createThemeRadio("Pastel", themeToggleGroup, "style.pastel");
         lightTheme.setSelected(true);
 
-        // HBox for radio buttons
         HBox themeBox = new HBox(10, lightTheme, darkTheme, pastelTheme);
-
-        // Align everything nicely
         themeBox.setAlignment(Pos.CENTER_RIGHT);
-        HBox.setHgrow(themeBox, Priority.NEVER);
-        HBox.setHgrow(bannerLabel, Priority.ALWAYS);
 
-        // Top row combining welcome + themes
-        HBox topRow = new HBox();
-        topRow.setPadding(new Insets(10));
-        topRow.setSpacing(10);
-        topRow.setAlignment(Pos.CENTER_LEFT);
-        // topRow.getChildren().addAll(bannerLabel, themeBox);
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        topRow.getChildren().addAll(bannerLabel, spacer, themeBox);
 
-        // Configuration Options
+        HBox topRow = new HBox(10, bannerLabel, spacer, themeBox);
+        topRow.setPadding(new Insets(10));
+        topRow.setAlignment(Pos.CENTER_LEFT);
+
+        return topRow;
+    }
+
+    private RadioButton createThemeRadio(String label, ToggleGroup group, String styleProperty) {
+        RadioButton rb = new RadioButton(label);
+        rb.setToggleGroup(group);
+        rb.setOnAction(e -> setStyle(scene, styleProperty));
+        return rb;
+    }
+
+    private VBox createConfigurationOptionsBox() {
         Label configOptionsLabel = new Label("How do you want to proceed?");
-        configOptionsLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-
-        RadioButton defaultSettingsOption = new RadioButton("Use default settings");
-        RadioButton fileSettingsOption = new RadioButton("Load settings from a configuration file");
-        RadioButton customSettingsOption = new RadioButton("Enter custom inputs interactively");
-        ToggleGroup configOptionsGroup = new ToggleGroup();
         defaultSettingsOption.setToggleGroup(configOptionsGroup);
         fileSettingsOption.setToggleGroup(configOptionsGroup);
         customSettingsOption.setToggleGroup(configOptionsGroup);
         defaultSettingsOption.setSelected(true);
 
-        VBox configOptionsBox = new VBox(10, configOptionsLabel, defaultSettingsOption, fileSettingsOption,
-                customSettingsOption);
+        configOptionsGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> updateCustomInputsVisibility());
 
-        // Input Fields for Custom Configuration
-        Label inputDirLabel = new Label("Input Directory:");
-        TextField inputDirField = new TextField();
-        Button inputDirButton = new Button("Browse...");
-        inputDirButton.setOnAction(event -> {
-            DirectoryChooser directoryChooser = new DirectoryChooser();
-            directoryChooser.setTitle("Select Input Directory");
-            File selectedDirectory = directoryChooser.showDialog(primaryStage);
-            if (selectedDirectory != null) {
-                inputDirField.setText(selectedDirectory.getAbsolutePath());
+        return new VBox(10, configOptionsLabel, defaultSettingsOption, fileSettingsOption, customSettingsOption);
+    }
+
+    private TitledPane createCustomInputsPane(Stage primaryStage) {
+        Button inputDirButton = createDirectoryButton("Browse...", inputDirField, primaryStage);
+        Button outputDirButton = createDirectoryButton("Browse...", outputDirField, primaryStage);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(10));
+
+        grid.addRow(0, new Label("Input Directory:"), inputDirField, inputDirButton);
+        grid.addRow(1, new Label("Output Directory:"), outputDirField, outputDirButton);
+        grid.addRow(2, new Label("Diagram Types (class,sequence):"), diagramTypesField);
+        grid.addRow(3, new Label("Include Package (default: all):"), includePackageField);
+        grid.getStyleClass().add("custom-inputs-grid");
+
+        TitledPane titledPane = new TitledPane("Custom Inputs", grid);
+        titledPane.setCollapsible(false);
+        titledPane.getStyleClass().add("custom-inputs-titled-pane");
+
+
+        return titledPane;
+    }
+
+    private Button createDirectoryButton(String label, TextField targetField, Stage stage) {
+        Button button = new Button(label);
+        button.setOnAction(event -> {
+            DirectoryChooser chooser = new DirectoryChooser();
+            File selected = chooser.showDialog(stage);
+            if (selected != null) {
+                targetField.setText(selected.getAbsolutePath());
             }
         });
+        return button;
+    }
 
-        Label outputDirLabel = new Label("Output Directory:");
-        TextField outputDirField = new TextField();
-        Button outputDirButton = new Button("Browse...");
-        outputDirButton.setOnAction(event -> {
-            DirectoryChooser directoryChooser = new DirectoryChooser();
-            directoryChooser.setTitle("Select Output Directory");
-            File selectedDirectory = directoryChooser.showDialog(primaryStage);
-            if (selectedDirectory != null) {
-                outputDirField.setText(selectedDirectory.getAbsolutePath());
-            }
-        });
-
-        Label diagramTypesLabel = new Label("Diagram Types (class,sequence):");
-        TextField diagramTypesField = new TextField("class,sequence");
-
-        Label includePackageLabel = new Label("Include Package (default: all):");
-        TextField includePackageField = new TextField();
-
-        GridPane customInputsGrid = new GridPane();
-        customInputsGrid.setHgap(10);
-        customInputsGrid.setVgap(10);
-        customInputsGrid.setPadding(new Insets(10));
-        customInputsGrid.add(inputDirLabel, 0, 0);
-        customInputsGrid.add(inputDirField, 1, 0);
-        customInputsGrid.add(inputDirButton, 2, 0);
-        customInputsGrid.add(outputDirLabel, 0, 1);
-        customInputsGrid.add(outputDirField, 1, 1);
-        customInputsGrid.add(outputDirButton, 2, 1);
-        customInputsGrid.add(diagramTypesLabel, 0, 2);
-        customInputsGrid.add(diagramTypesField, 1, 2);
-        customInputsGrid.add(includePackageLabel, 0, 3);
-        customInputsGrid.add(includePackageField, 1, 3);
-
-        TitledPane customInputsPane = new TitledPane("Custom Inputs", customInputsGrid);
-        customInputsPane.setCollapsible(false);
-
-        VBox customInputsBox = new VBox(10, customInputsPane);
-        customInputsBox.setVisible(false);
-
-        // Show/Hide Custom Inputs Based on Selection
-        customSettingsOption.setOnAction(event -> customInputsBox.setVisible(true));
-        defaultSettingsOption.setOnAction(event -> customInputsBox.setVisible(false));
-        fileSettingsOption.setOnAction(event -> customInputsBox.setVisible(false));
-
-        // Progress Indicator
-        ProgressIndicator progressIndicator = new ProgressIndicator();
+    private Button createGenerateButton() {
+        Button generateButton = new Button("Generate UML Diagrams");
         progressIndicator.setVisible(false);
 
-        // Success and Error Messages
-        Label messageLabel = new Label();
-        messageLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: green;");
-
-        // Generate Button
-        Button generateButton = new Button("Generate UML Diagrams");
-        generateButton.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-
         generateButton.setOnAction(event -> {
+            
+            progressIndicator.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
             progressIndicator.setVisible(true);
             messageLabel.setText("Generating UML diagrams...");
-            messageLabel.setStyle("-fx-text-fill: blue;");
 
-            // Run the diagram generation in a background thread
             new Thread(() -> {
                 try {
                     ConfigurationManager configManager = ConfigurationManager.getInstance();
@@ -165,7 +149,7 @@ public class ConfigurationTab {
                         configManager.loadDefaultConfig();
                     } else if (fileSettingsOption.isSelected()) {
                         configManager.loadFileConfig("config/application.properties");
-                    } else if (customSettingsOption.isSelected()) {
+                    } else {
                         configManager.setProperty("input.directory", inputDirField.getText());
                         configManager.setProperty("output.directory", outputDirField.getText());
                         configManager.setProperty("diagram.types", diagramTypesField.getText());
@@ -175,32 +159,30 @@ public class ConfigurationTab {
                     UMLDiagramGenerator generator = new UMLDiagramGenerator(configManager);
                     generator.generateDiagrams();
 
-                    // Update the UI on the JavaFX Application Thread
                     Platform.runLater(() -> {
                         progressIndicator.setVisible(false);
+                        progressIndicator.setProgress(0);
+                        
                         messageLabel.setText("UML diagrams generated successfully!");
-                        messageLabel.setStyle("-fx-text-fill: green;");
                     });
+
                 } catch (Exception e) {
                     Platform.runLater(() -> {
                         progressIndicator.setVisible(false);
+                        progressIndicator.setProgress(0);
                         messageLabel.setText("Error: " + e.getMessage());
-                        messageLabel.setStyle("-fx-text-fill: red;");
                     });
                 }
             }).start();
         });
 
-        // Add padding to the parent VBox
- 
-        layout = new VBox(15, topRow, configOptionsBox, customInputsBox, generateButton, progressIndicator,
-                messageLabel);
-
-        layout.setPadding(new Insets(20)); // Add padding around the entire layout
+        return generateButton;
     }
 
-    public VBox getLayout() {
-        return layout;
+    private void updateCustomInputsVisibility() {
+        RadioButton selected = (RadioButton) configOptionsGroup.getSelectedToggle();
+        boolean show = selected == customSettingsOption;
+        customInputsBox.setVisible(show);
     }
 
     private void setStyle(Scene scene, String styleProperty) {
@@ -208,48 +190,33 @@ public class ConfigurationTab {
             logger.error("Scene not set");
             return;
         }
-        ConfigurationManager configurationManager = ConfigurationManager.getInstance();
 
-        String cssFilePath = configurationManager.getProperty(styleProperty);
-
+        ConfigurationManager configManager = ConfigurationManager.getInstance();
+        String cssFilePath = configManager.getProperty(styleProperty);
         File cssFile = new File(cssFilePath);
+
         if (cssFile.exists()) {
-            scene.getStylesheets().clear();
-
-            scene.getStylesheets().add(cssFile.toURI().toString());
+            scene.getStylesheets().setAll(cssFile.toURI().toString());
         } else {
-            logger.error("Stylesheet not found at: " + cssFile.getAbsolutePath());
-            logger.error("Either application.properties is not loaded or property in file is missing");
-            logger.info("Going to load styles from default path if it exists");
+            logger.warn("Falling back to default styles");
+            loadFallbackStyle(scene, styleProperty);
+        }
+    }
 
-            String style;
-            switch (styleProperty) {
-                case "style.dark":
-                    style = "style_dark.css";
-                    break;
-                case "style.light":
-                    style = "style_light.css";
-                    break;
-                case "style.pastel":
-                    style = "style_pastel.css";
-                    break;
-                default:
-                    style = "style_light.css";
-                    break;
-            }
-
-            File cssFromDefaultLocation = new File("styles/" + style);
-
-            if (cssFromDefaultLocation.exists()) {
-                scene.getStylesheets().clear();
-
-                scene.getStylesheets().add(cssFromDefaultLocation.toURI().toString());
-                logger.info("Style loaded from default location: " + cssFromDefaultLocation.toURI().toString());
-            } else {
-
-                logger.error("css files not present in default location, can't apply theme.");
-            }
+    private void loadFallbackStyle(Scene scene, String styleProperty) {
+        String fallbackFile;
+        switch (styleProperty) {
+            case "style.dark" -> fallbackFile = "style_dark.css";
+            case "style.pastel" -> fallbackFile = "style_pastel.css";
+            default -> fallbackFile = "style_light.css";
         }
 
+        File fallback = new File("styles/" + fallbackFile);
+        if (fallback.exists()) {
+            scene.getStylesheets().setAll(fallback.toURI().toString());
+            logger.info("Fallback style loaded from: " + fallback.getAbsolutePath());
+        } else {
+            logger.error("No fallback style found either.");
+        }
     }
 }
