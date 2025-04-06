@@ -17,7 +17,7 @@
 .custom-inputs-grid .button {
     -fx-background-color: #A7C7E7;
     -fx-text-fill: #333333;
-    -fx-background-radius: 8;
+
 }
 
 .button:hover,
@@ -34,7 +34,7 @@
 .custom-inputs-grid .text-field {
     -fx-background-color: #FFFFFF;
     -fx-border-color: #FFD6E0;
-    -fx-border-radius: 6;
+ 
     -fx-text-fill: #333333;
 }
 
@@ -59,7 +59,7 @@
     -fx-background-color: #F5F5F5;
     -fx-text-fill: #333333;
     -fx-border-color: #E6E6E6;
-    -fx-border-width: 1;
+  
 }
 
 .custom-inputs-titled-pane > .title {
@@ -82,3 +82,63 @@
    
 }
 
+.custom-inputs-grid {
+    -fx-background-color: transparent; /* For consistency: Defined across themes for layout styling */
+    -fx-text-fill: inherit;
+}
+
+/* === TAB STYLING FOR PASTEL THEME === */
+
+/* TabPane background */
+.tab-pane {
+    -fx-background-color: #FAF9F6;
+}
+
+/* Tab headers (unselected) */
+.tab {
+    -fx-background-color: #EAF3FB;  /* very soft blue */
+    -fx-border-color: #E6E6E6 #E6E6E6 transparent #E6E6E6;
+    -fx-text-fill: #333333;
+
+}
+
+/* Hover state */
+.tab:hover {
+    -fx-background-color: #D6E9F9;  /* slightly darker on hover */
+}
+
+/* Selected tab */
+.tab:selected {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #A7C7E7 #A7C7E7 transparent #A7C7E7;
+    -fx-text-fill: #333333;
+    -fx-font-weight: bold;
+}
+
+/* Tab label text */
+.tab-label {
+    -fx-text-fill: #333333;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+}
+
+/* Tab content area */
+.tab-content-area {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E6E6E6;
+
+}
+
+.toggle-button {
+    -fx-background-color: #A7C7E7; /* For consistency: Soft pastel version of primary accent */
+    -fx-text-fill: #333333;
+}
+
+.toggle-button:hover {
+    -fx-background-color: #91B8DF;
+}
+
+.toggle-button:selected {
+    -fx-background-color: #91B8DF;
+    -fx-text-fill: #333333;
+}

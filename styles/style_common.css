@@ -1,6 +1,7 @@
 /* === Font and Basic Scene === */
 .root {
     -fx-font-family: "Segoe UI", sans-serif;
+    
 }
 
 /* === Transitions and shared button/text styles === */
@@ -18,6 +19,7 @@
 /* === Layout Containers === */
 .vbox, .hbox {
     -fx-background-color: transparent;
+
 }
 
 /* === Grid common spacing === */
@@ -50,7 +52,9 @@
 #bannerLabel {
     -fx-font-size: 20pt;
     -fx-font-weight: bold;
-    -fx-padding: 10 20;
+    -fx-padding: 8 18;
     -fx-background-radius: 10;
     -fx-alignment: center;
+    
 }
+

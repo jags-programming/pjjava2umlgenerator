@@ -21,15 +21,16 @@ public class UMLGeneratorGUI extends Application {
 
         // Add Configuration Tab
         ConfigurationTab configurationTab = new ConfigurationTab(primaryStage);
+        Tab configTabUI = new Tab("Configuration", configurationTab.getLayout());
+        configTabUI.setClosable(false);
 
-        Tab configTab = new Tab("Configuration", configurationTab.getLayout());
-        configTab.setClosable(false);
-
+       
         // Add Preview Tab
-        Tab previewTab = new Tab("Diagram Preview", new PreviewTab(primaryStage).getLayout());
-        previewTab.setClosable(false);
+        PreviewTab previeTab = new PreviewTab(primaryStage);
+        Tab previewTabUI = new Tab("Diagram Preview", previeTab.getLayout());
+        previewTabUI.setClosable(false);
 
-        tabPane.getTabs().addAll(configTab, previewTab);
+        tabPane.getTabs().addAll(configTabUI, previewTabUI);
 
         // Set up Scene and Stage
         Scene scene = new Scene(tabPane, 800, 600);
